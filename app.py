@@ -5,7 +5,7 @@ import google.generativeai as genai
 from dotenv import load_dotenv
 from werkzeug.utils import secure_filename
 from pathlib import Path
-from waitress import serve
+
 
 # --- App Initialization ---
 app = Flask(__name__)
@@ -116,5 +116,4 @@ def analyze_image():
 # A WSGI server like Gunicorn will be the entry point.
 if __name__ == "__main__":
     app.run(debug=True, port=8000)
-    from waitress import serve
-    serve(app, host="0.0.0.0", port=port)
+    

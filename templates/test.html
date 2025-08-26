@@ -256,15 +256,17 @@
     <script>
 async function sendMessage() {
     let message = document.getElementById("userInput").value;
-    let response = await fetch("/chat", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({message: message})
-    });
+    let response = await fetch("/get-response", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message: userMessage })
+});
+
+    };
     let data = await response.json();
     document.getElementById("chatBox").innerHTML += "<p>You: " + message + "</p>";
     document.getElementById("chatBox").innerHTML += "<p>Bot: " + data.reply + "</p>";
-}
+
 </script>
 </body>
 </html>
