@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About MediBot - AI Medical Companion</title>
+    <meta name="description" content="Learn about MediBot - Your compassionate AI assistant for health and wellness guidance">
+    
+    <!-- External Libraries -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ===== CSS VARIABLES FOR THEMES ===== */
+        :root {
+            /* Light Theme Variables */
+            --bg-primary-light: #ffffff;
+            --bg-secondary-light: #f8fafc;
+            --text-primary-light: #1e293b;
+            --text-secondary-light: #64748b;
+            --accent-light: #8f94fb;
+            --border-light: #e2e8f0;
+            --card-bg-light: rgba(255, 255, 255, 0.95);
+            --sidebar-bg-light: rgba(255, 255, 255, 0.9);
+            
+            /* Dark Theme Variables - Redesigned */
+            --bg-primary-dark: #0f172a; /* Deep navy blue */
+            --bg-secondary-dark: #1e293b; /* Slightly lighter navy */
+            --text-primary-dark: #f1f5f9;
+            --text-secondary-dark: #cbd5e1;
+            --accent-dark: #8f94fb;
+            --accent-secondary: #667eea;
+            --border-dark: rgba(255, 255, 255, 0.15);
+            --card-bg-dark: rgba(30, 41, 59, 0.8);
+            --sidebar-bg-dark: rgba(15, 23, 42, 0.9);
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --error-color: #ef4444;
+        }
+
+        /* ===== GLOBAL STYLES ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary-dark) 0%, var(--bg-secondary-dark) 35%, rgba(30, 41, 59, 0.85) 100%), url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80');
+            background-size: cover;
+            background-position: center center;
+            background-attachment: fixed;
+            min-height: 100vh;
+            color: var(--text-primary-dark);
+            display: flex;
+            position: relative;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        body.light-mode {
+            background: linear-gradient(135deg, var(--bg-primary-light) 0%, var(--bg-secondary-light) 35%, rgba(248, 250, 252, 0.95) 100%), url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80');
+            color: var(--text-primary-light);
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.7) 0%, rgba(30, 41, 59, 0.6) 50%, rgba(51, 65, 85, 0.5) 100%);
+            z-index: -1;
+            transition: background 0.3s ease;
+        }
+
+        body.light-mode::before {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.7) 0%, rgba(248, 250, 252, 0.6) 50%, rgba(241, 245, 249, 0.5) 100%);
+        }
+
+        /* ===== MAIN CONTENT STYLES ===== */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 40px;
+            transition: margin-left 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .main-content.expanded {
+            margin-left: 0;
+        }
+
+        /* ===== ABOUT CONTAINER STYLES ===== */
+        .about-container {
+            background: var(--card-bg-dark);
+            backdrop-filter: blur(15px);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        body.light-mode .about-container {
+            background: var(--card-bg-light);
+            border: 1px solid var(--border-light);
+            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.1);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .about-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .about-header h1 {
+            font-family: 'Playfair Display', serif;
+            color: #ffffff;
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+
+        body.light-mode .about-header h1 {
+            color: var(--text-primary-light);
+            text-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .about-header p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 18px;
+        }
+
+        body.light-mode .about-header p {
+            color: var(--text-secondary-light);
+        }
+
+        .about-content {
+            line-height: 1.8;
+        }
+
+        .about-section {
+            margin-bottom: 30px;
+        }
+
+        .about-section h2 {
+            color: #ffffff;
+            font-size: 24px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        body.light-mode .about-section h2 {
+            color: var(--text-primary-light);
+        }
+
+        .about-section p {
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        body.light-mode .about-section p {
+            color: var(--text-secondary-light);
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 10px;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        body.light-mode .feature-list li {
+            color: var(--text-secondary-light);
+        }
+
+        .feature-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: var(--accent-dark);
+            font-weight: bold;
+        }
+
+        body.light-mode .feature-list li:before {
+            color: var(--accent-light);
+        }
+
+        .disclaimer {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid var(--warning-color);
+            margin-top: 30px;
+        }
+
+        body.light-mode .disclaimer {
+            background: rgba(0, 0, 0, 0.05);
+            border-left: 4px solid var(--warning-color);
+        }
+
+        .disclaimer h3 {
+            color: var(--warning-color);
+            margin-bottom: 10px;
+        }
+
+        .disclaimer p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
+        }
+
+        body.light-mode .disclaimer p {
+            color: var(--text-secondary-light);
+        }
+
+        /* ===== RESPONSIVE STYLES ===== */
+        @media (max-width: 1200px) {
+            .main-content {
+                margin-left: 250px;
+                padding: 30px;
+            }
+            
+            .about-container {
+                padding: 30px;
+            }
+            
+            .about-header h1 {
+                font-size: 32px;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                margin-left: 220px;
+                padding: 25px;
+            }
+            
+            .about-header h1 {
+                font-size: 30px;
+            }
+            
+            .about-section h2 {
+                font-size: 22px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 280px;
+                transform: translateX(-280px);
+            }
+            
+            .sidebar.collapsed {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+                padding: 20px;
+            }
+            
+            .about-container {
+                padding: 20px;
+            }
+            
+            .about-header h1 {
+                font-size: 28px;
+            }
+            
+            .about-header p {
+                font-size: 16px;
+            }
+            
+            .about-section h2 {
+                font-size: 20px;
+            }
+            
+            .about-section p {
+                font-size: 15px;
+            }
+            
+            .feature-list li {
+                font-size: 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .sidebar {
+                width: 100%;
+                transform: translateX(-100%);
+            }
+            
+            .sidebar-toggle {
+                top: 15px;
+                left: 15px;
+                width: 36px;
+                height: 36px;
+            }
+            
+            .main-content {
+                padding: 15px;
+            }
+            
+            .about-container {
+                padding: 15px;
+                border-radius: 15px;
+            }
+            
+            .about-header {
+                margin-bottom: 30px;
+                padding-bottom: 15px;
+            }
+            
+            .about-header h1 {
+                font-size: 24px;
+            }
+            
+            .about-header p {
+                font-size: 14px;
+            }
+            
+            .about-section {
+                margin-bottom: 25px;
+            }
+            
+            .about-section h2 {
+                font-size: 18px;
+                margin-bottom: 12px;
+            }
+            
+            .about-section p {
+                font-size: 14px;
+                margin-bottom: 12px;
+            }
+            
+            .feature-list li {
+                font-size: 14px;
+                margin-bottom: 8px;
+                padding-left: 22px;
+            }
+            
+            .disclaimer {
+                padding: 15px;
+                margin-top: 25px;
+            }
+            
+            .disclaimer p {
+                font-size: 13px;
+            }
+        }
+
+        @media (max-width: 320px) {
+            .main-content {
+                padding: 10px;
+            }
+            
+            .about-container {
+                padding: 12px;
+            }
+            
+            .about-header h1 {
+                font-size: 22px;
+            }
+            
+            .about-section h2 {
+                font-size: 17px;
+            }
+            
+            .about-section p {
+                font-size: 13px;
+            }
+            
+            .feature-list li {
+                font-size: 13px;
+            }
+        }
+
+        /* Touch device specific styles */
+        @media (hover: none) and (pointer: coarse) {
+            .sidebar-toggle:hover,
+            .nav-item:hover,
+            .theme-toggle:hover {
+                transform: none;
+            }
+            
+            .nav-item:active,
+            .theme-toggle:active {
+                transform: scale(0.98);
+            }
+            
+            .nav-item,
+            .theme-toggle {
+                min-height: 44px;
+            }
+        }
+
+        /* High DPI screens */
+        @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+            .about-header h1 {
+                font-weight: 600;
+            }
+            
+            .about-section h2 {
+                font-weight: 500;
+            }
+        }
+
+        /* Landscape orientation for mobile */
+        @media (max-width: 768px) and (orientation: landscape) {
+            .about-container {
+                max-height: 80vh;
+                overflow-y: auto;
+            }
+        }
+
+        /* Print styles */
+        @media print {
+            body {
+                background: white !important;
+                color: black !important;
+            }
+            
+            .sidebar,
+            .sidebar-toggle {
+                display: none !important;
+            }
+            
+            .main-content {
+                margin-left: 0 !important;
+            }
+            
+            .about-container {
+                box-shadow: none !important;
+                border: 1px solid #ccc !important;
+                background: white !important;
+            }
+            
+            .about-header h1,
+            .about-section h2 {
+                color: black !important;
+                text-shadow: none !important;
+            }
+            
+            .about-header p,
+            .about-section p,
+            .feature-list li {
+                color: #333 !important;
+            }
+            
+            .feature-list li:before {
+                color: #007bff !important;
+            }
+            
+            .disclaimer {
+                background: #f8f9fa !important;
+                border-left: 4px solid #ffc107 !important;
+            }
+            
+            .disclaimer h3 {
+                color: #856404 !important;
+            }
+            
+            .disclaimer p {
+                color: #495057 !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar Toggle -->
+    <button class="sidebar-toggle" onclick="toggleSidebar()">
+        <div class="toggle-pin"></div>
+        <div class="toggle-pin"></div>
+        <div class="toggle-pin"></div>
+    </button>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="logo">
+            <h1>MediBot</h1>
+        </div>
+        
+        <div class="nav-items">
+            <a href="test.html" class="nav-item">
+                <i>💬</i>
+                <span>Chat</span>
+            </a>
+            
+            <a href="about.html" class="nav-item active">
+                <i>📄</i>
+                <span>About</span>
+            </a>
+            
+            <a href="terms.html" class="nav-item">
+                <i>📋</i>
+                <span>Terms and Conditions</span>
+            </a>
+
+            <!-- Theme Toggle -->
+            <div class="theme-toggle" onclick="toggleTheme()">
+                <i id="themeIcon">🌙</i>
+                <span id="themeLabel">Dark Mode</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        <div class="about-container">
+            <div class="about-header">
+                <h1>About MediBot</h1>
+                <p>Your compassionate AI companion for medical wellness</p>
+            </div>
+            
+            <div class="about-content">
+                <div class="about-section">
+                    <h2>What is MediBot?</h2>
+                    <p>MediBot is an AI-powered medical companion designed to provide general health information, wellness guidance, and preliminary analysis of medical reports and images. Our goal is to make healthcare information more accessible and understandable for everyone.</p>
+                </div>
+
+                <div class="about-section">
+                    <h2>Key Features</h2>
+                    <ul class="feature-list">
+                        <li>AI-powered medical consultations and health advice</li>
+                        <li>Image analysis for medical reports and injuries</li>
+                        <li>Personalized wellness recommendations</li>
+                        <li>24/7 availability for health-related queries</li>
+                        <li>User-friendly interface with dark/light mode support</li>
+                        <li>Secure and private conversations</li>
+                    </ul>
+                </div>
+
+                <div class="about-section">
+                    <h2>How It Works</h2>
+                    <p>MediBot uses advanced artificial intelligence algorithms to understand your health concerns and provide relevant information. You can:</p>
+                    <ul class="feature-list">
+                        <li>Ask general health questions</li>
+                        <li>Upload images of medical reports for explanation</li>
+                        <li>Get information about symptoms and conditions</li>
+                        <li>Receive wellness and lifestyle recommendations</li>
+                    </ul>
+                </div>
+
+                <div class="about-section">
+                    <h2>Our Mission</h2>
+                    <p>We believe that everyone deserves access to reliable health information. MediBot aims to bridge the gap between complex medical terminology and everyday understanding, making healthcare knowledge more accessible to all.</p>
+                </div>
+
+                <div class="disclaimer">
+                    <h3>Important Disclaimer</h3>
+                    <p>MediBot is an AI assistant and not a substitute for professional medical advice, diagnosis, or treatment. Always seek the advice of qualified healthcare providers with any questions you may have regarding medical conditions. Never disregard professional medical advice or delay in seeking it because of something you have read or received from MediBot.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== SIDEBAR FUNCTIONS =====
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+        }
+
+        // ===== THEME TOGGLE FUNCTION =====
+        function toggleTheme() {
+            const isLightMode = document.body.classList.toggle('light-mode');
+            const themeIcon = document.getElementById('themeIcon');
+            const themeLabel = document.getElementById('themeLabel');
+            
+            if (isLightMode) {
+                themeIcon.textContent = '☀️';
+                themeLabel.textContent = 'Light Mode';
+                localStorage.setItem('darkMode', 'enabled');
+            } else {
+                themeIcon.textContent = '🌙';
+                themeLabel.textContent = 'Dark Mode';
+                localStorage.setItem('darkMode', 'disabled');
+            }
+        }
+
+        // Initialize theme based on localStorage
+        function initializeTheme() {
+            const themeIcon = document.getElementById('themeIcon');
+            const themeLabel = document.getElementById('themeLabel');
+            
+            if (localStorage.getItem('darkMode') === 'enabled') {
+                document.body.classList.add('light-mode');
+                themeIcon.textContent = '☀️';
+                themeLabel.textContent = 'Light Mode';
+            } else {
+                document.body.classList.remove('light-mode');
+                themeIcon.textContent = '🌙';
+                themeLabel.textContent = 'Dark Mode';
+            }
+        }
+
+        // ===== INITIALIZATION =====
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize theme
+            initializeTheme();
+            // Ensure sidebar is visible
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.remove('collapsed');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms and Conditions - MediBot</title>
+    <meta name="description" content="Terms and Conditions for using MediBot - AI Medical Companion">
+    
+    <!-- External Libraries -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ===== CSS VARIABLES FOR THEMES ===== */
+        :root {
+            /* Light Theme Variables */
+            --bg-primary-light: #ffffff;
+            --bg-secondary-light: #f8fafc;
+            --text-primary-light: #1e293b;
+            --text-secondary-light: #64748b;
+            --accent-light: #8f94fb;
+            --border-light: #e2e8f0;
+            --card-bg-light: rgba(255, 255, 255, 0.95);
+            --sidebar-bg-light: rgba(255, 255, 255, 0.9);
+            
+            /* Dark Theme Variables - Redesigned */
+            --bg-primary-dark: #0f172a; /* Deep navy blue */
+            --bg-secondary-dark: #1e293b; /* Slightly lighter navy */
+            --text-primary-dark: #f1f5f9;
+            --text-secondary-dark: #cbd5e1;
+            --accent-dark: #8f94fb;
+            --accent-secondary: #667eea;
+            --border-dark: rgba(255, 255, 255, 0.15);
+            --card-bg-dark: rgba(30, 41, 59, 0.8);
+            --sidebar-bg-dark: rgba(15, 23, 42, 0.9);
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --error-color: #ef4444;
+        }
+
+        /* ===== GLOBAL STYLES ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary-dark) 0%, var(--bg-secondary-dark) 35%, rgba(30, 41, 59, 0.85) 100%), url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80');
+            background-size: cover;
+            background-position: center center;
+            background-attachment: fixed;
+            min-height: 100vh;
+            color: var(--text-primary-dark);
+            display: flex;
+            position: relative;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        body.light-mode {
+            background: linear-gradient(135deg, var(--bg-primary-light) 0%, var(--bg-secondary-light) 35%, rgba(248, 250, 252, 0.95) 100%), url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80');
+            color: var(--text-primary-light);
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.7) 0%, rgba(30, 41, 59, 0.6) 50%, rgba(51, 65, 85, 0.5) 100%);
+            z-index: -1;
+            transition: background 0.3s ease;
+        }
+
+        body.light-mode::before {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.7) 0%, rgba(248, 250, 252, 0.6) 50%, rgba(241, 245, 249, 0.5) 100%);
+        }
+
+        /* ===== MAIN CONTENT STYLES ===== */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 40px;
+            transition: margin-left 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .main-content.expanded {
+            margin-left: 0;
+        }
+
+        /* ===== TERMS CONTAINER STYLES ===== */
+        .terms-container {
+            background: var(--card-bg-dark);
+            backdrop-filter: blur(15px);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: fadeInUp 0.8s ease-out;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        body.light-mode .terms-container {
+            background: var(--card-bg-light);
+            border: 1px solid var(--border-light);
+            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.1);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .terms-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .terms-header h1 {
+            font-family: 'Playfair Display', serif;
+            color: #ffffff;
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+
+        body.light-mode .terms-header h1 {
+            color: var(--text-primary-light);
+            text-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .terms-header p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 18px;
+        }
+
+        body.light-mode .terms-header p {
+            color: var(--text-secondary-light);
+        }
+
+        .terms-content {
+            line-height: 1.8;
+        }
+
+        .terms-section {
+            margin-bottom: 30px;
+        }
+
+        .terms-section h2 {
+            color: #ffffff;
+            font-size: 24px;
+            margin-bottom: 15px;
+            font-weight: 600;
+            border-left: 4px solid var(--accent-dark);
+            padding-left: 15px;
+        }
+
+        body.light-mode .terms-section h2 {
+            color: var(--text-primary-light);
+            border-left: 4px solid var(--accent-light);
+        }
+
+        .terms-section p {
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        body.light-mode .terms-section p {
+            color: var(--text-secondary-light);
+        }
+
+        .terms-list {
+            list-style: none;
+            padding: 0;
+            margin: 15px 0;
+        }
+
+        .terms-list li {
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 10px;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        body.light-mode .terms-list li {
+            color: var(--text-secondary-light);
+        }
+
+        .terms-list li:before {
+            content: "•";
+            position: absolute;
+            left: 10px;
+            color: var(--accent-dark);
+            font-weight: bold;
+            font-size: 20px;
+        }
+
+        body.light-mode .terms-list li:before {
+            color: var(--accent-light);
+        }
+
+        .warning-box {
+            background: rgba(239, 68, 68, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid var(--error-color);
+            margin: 20px 0;
+        }
+
+        .warning-box h3 {
+            color: var(--error-color);
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .warning-box p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
+            margin: 0;
+        }
+
+        body.light-mode .warning-box p {
+            color: var(--text-secondary-light);
+        }
+
+        .last-updated {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+        }
+
+        body.light-mode .last-updated {
+            color: var(--text-secondary-light);
+            border-top: 1px solid var(--border-light);
+        }
+
+        /* ===== RESPONSIVE STYLES ===== */
+        @media (max-width: 1200px) {
+            .main-content {
+                margin-left: 250px;
+                padding: 30px;
+            }
+            
+            .terms-container {
+                padding: 30px;
+            }
+            
+            .terms-header h1 {
+                font-size: 32px;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                margin-left: 220px;
+                padding: 25px;
+            }
+            
+            .terms-header h1 {
+                font-size: 30px;
+            }
+            
+            .terms-section h2 {
+                font-size: 22px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 280px;
+                transform: translateX(-280px);
+            }
+            
+            .sidebar.collapsed {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+                padding: 20px;
+            }
+            
+            .terms-container {
+                padding: 20px;
+                max-height: none;
+            }
+            
+            .terms-header h1 {
+                font-size: 28px;
+            }
+            
+            .terms-header p {
+                font-size: 16px;
+            }
+            
+            .terms-section h2 {
+                font-size: 20px;
+            }
+            
+            .terms-section p {
+                font-size: 15px;
+            }
+            
+            .terms-list li {
+                font-size: 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .sidebar {
+                width: 100%;
+                transform: translateX(-100%);
+            }
+            
+            .sidebar-toggle {
+                top: 15px;
+                left: 15px;
+                width: 36px;
+                height: 36px;
+            }
+            
+            .main-content {
+                padding: 15px;
+            }
+            
+            .terms-container {
+                padding: 15px;
+                border-radius: 15px;
+            }
+            
+            .terms-header {
+                margin-bottom: 30px;
+                padding-bottom: 15px;
+            }
+            
+            .terms-header h1 {
+                font-size: 24px;
+            }
+            
+            .terms-header p {
+                font-size: 14px;
+            }
+            
+            .terms-section {
+                margin-bottom: 25px;
+            }
+            
+            .terms-section h2 {
+                font-size: 18px;
+                margin-bottom: 12px;
+            }
+            
+            .terms-section p {
+                font-size: 14px;
+                margin-bottom: 12px;
+            }
+            
+            .terms-list li {
+                font-size: 14px;
+                margin-bottom: 8px;
+                padding-left: 22px;
+            }
+            
+            .warning-box {
+                padding: 15px;
+                margin-top: 25px;
+            }
+            
+            .warning-box p {
+                font-size: 13px;
+            }
+        }
+
+        @media (max-width: 320px) {
+            .main-content {
+                padding: 10px;
+            }
+            
+            .terms-container {
+                padding: 12px;
+            }
+            
+            .terms-header h1 {
+                font-size: 22px;
+            }
+            
+            .terms-section h2 {
+                font-size: 17px;
+            }
+            
+            .terms-section p {
+                font-size: 13px;
+            }
+            
+            .terms-list li {
+                font-size: 13px;
+            }
+        }
+
+        /* Touch device specific styles */
+        @media (hover: none) and (pointer: coarse) {
+            .sidebar-toggle:hover,
+            .nav-item:hover,
+            .theme-toggle:hover {
+                transform: none;
+            }
+            
+            .nav-item:active,
+            .theme-toggle:active {
+                transform: scale(0.98);
+            }
+            
+            .nav-item,
+            .theme-toggle {
+                min-height: 44px;
+            }
+        }
+
+        /* High DPI screens */
+        @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+            .terms-header h1 {
+                font-weight: 600;
+            }
+            
+            .terms-section h2 {
+                font-weight: 500;
+            }
+        }
+
+        /* Landscape orientation for mobile */
+        @media (max-width: 768px) and (orientation: landscape) {
+            .terms-container {
+                max-height: 80vh;
+                overflow-y: auto;
+            }
+        }
+
+        /* Print styles */
+        @media print {
+            body {
+                background: white !important;
+                color: black !important;
+            }
+            
+            .sidebar,
+            .sidebar-toggle {
+                display: none !important;
+            }
+            
+            .main-content {
+                margin-left: 0 !important;
+            }
+            
+            .terms-container {
+                box-shadow: none !important;
+                border: 1px solid #ccc !important;
+                background: white !important;
+            }
+            
+            .terms-header h1,
+            .terms-section h2 {
+                color: black !important;
+                text-shadow: none !important;
+            }
+            
+            .terms-header p,
+            .terms-section p,
+            .terms-list li {
+                color: #333 !important;
+            }
+            
+            .terms-list li:before {
+                color: #007bff !important;
+            }
+            
+            .warning-box {
+                background: #f8f9fa !important;
+                border-left: 4px solid #ffc107 !important;
+            }
+            
+            .warning-box h3 {
+                color: #856404 !important;
+            }
+            
+            .warning-box p {
+                color: #495057 !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar Toggle -->
+    <button class="sidebar-toggle" onclick="toggleSidebar()">
+        <div class="toggle-pin"></div>
+        <div class="toggle-pin"></div>
+        <div class="toggle-pin"></div>
+    </button>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="logo">
+            <h1>MediBot</h1>
+        </div>
+        
+        <div class="nav-items">
+            <a href="test.html" class="nav-item">
+                <i>💬</i>
+                <span>Chat</span>
+            </a>
+            
+            <a href="about.html" class="nav-item">
+                <i>📄</i>
+                <span>About</span>
+            </a>
+            
+            <a href="terms.html" class="nav-item active">
+                <i>📋</i>
+                <span>Terms and Conditions</span>
+            </a>
+
+            <!-- Theme Toggle -->
+            <div class="theme-toggle" onclick="toggleTheme()">
+                <i id="themeIcon">🌙</i>
+                <span id="themeLabel">Dark Mode</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        <div class="terms-container">
+            <div class="terms-header">
+                <h1>Terms and Conditions</h1>
+                <p>Please read these terms carefully before using MediBot</p>
+            </div>
+            
+            <div class="terms-content">
+                <div class="terms-section">
+                    <h2>1. Acceptance of Terms</h2>
+                    <p>By accessing and using MediBot, you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to abide by these terms, please do not use this service.</p>
+                </div>
+
+                <div class="terms-section">
+                    <h2>2. Service Description</h2>
+                    <p>MediBot is an AI-powered medical companion that provides:</p>
+                    <ul class="terms-list">
+                        <li>General health information and wellness guidance</li>
+                        <li>Preliminary analysis of medical reports and images</li>
+                        <li>Educational content about medical conditions</li>
+                        <li>Lifestyle and wellness recommendations</li>
+                    </ul>
+                </div>
+
+                <div class="terms-section">
+                    <h2>3. Medical Disclaimer</h2>
+                    <div class="warning-box">
+                        <h3>Important Notice</h3>
+                        <p>MediBot is NOT a substitute for professional medical advice, diagnosis, or treatment. The information provided by MediBot is for educational and informational purposes only.</p>
+                    </div>
+                    <p>You should NEVER:</p>
+                    <ul class="terms-list">
+                        <li>Disregard professional medical advice because of information received from MediBot</li>
+                        <li>Delay seeking medical treatment based on MediBot's responses</li>
+                        <li>Use MediBot for emergency medical situations</li>
+                        <li>Rely solely on MediBot for medical decision-making</li>
+                    </ul>
+                </div>
+
+                <div class="terms-section">
+                    <h2>4. User Responsibilities</h2>
+                    <p>As a user of MediBot, you agree to:</p>
+                    <ul class="terms-list">
+                        <li>Provide accurate and complete information when using the service</li>
+                        <li>Not use the service for illegal or unauthorized purposes</li>
+                        <li>Not attempt to gain unauthorized access to any part of the service</li>
+                        <li>Use the service in compliance with all applicable laws</li>
+                        <li>Seek professional medical advice for actual medical concerns</li>
+                    </ul>
+                </div>
+
+                <div class="terms-section">
+                    <h2>5. Privacy and Data Security</h2>
+                    <p>We are committed to protecting your privacy:</p>
+                    <ul class="terms-list">
+                        <li>We do not store personal health information unless explicitly provided</li>
+                        <li>All conversations are encrypted and secure</li>
+                        <li>We do not share your data with third parties without consent</li>
+                        <li>You retain ownership of any content you provide</li>
+                    </ul>
+                </div>
+
+                <div class="terms-section">
+                    <h2>6. Intellectual Property</h2>
+                    <p>All content, features, and functionality of MediBot are owned by us and are protected by international copyright, trademark, and other intellectual property laws.</p>
+                </div>
+
+                <div class="terms-section">
+                    <h2>7. Limitation of Liability</h2>
+                    <p>To the fullest extent permitted by law, we shall not be liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use of or inability to use MediBot.</p>
+                </div>
+
+                <div class="terms-section">
+                    <h2>8. Changes to Terms</h2>
+                    <p>We reserve the right to modify these terms at any time. We will notify users of any material changes through the service or via email.</p>
+                </div>
+
+                <div class="terms-section">
+                    <h2>9. Governing Law</h2>
+                    <p>These terms shall be governed by and construed in accordance with the laws of the jurisdiction where the service is provided, without regard to its conflict of law provisions.</p>
+                </div>
+
+                <div class="last-updated">
+                    <p>Last Updated: January 2024</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== SIDEBAR FUNCTIONS =====
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+        }
+
+        // ===== THEME TOGGLE FUNCTION =====
+        function toggleTheme() {
+            const isLightMode = document.body.classList.toggle('light-mode');
+            const themeIcon = document.getElementById('themeIcon');
+            const themeLabel = document.getElementById('themeLabel');
+            
+            if (isLightMode) {
+                themeIcon.textContent = '☀️';
+                themeLabel.textContent = 'Light Mode';
+                localStorage.setItem('darkMode', 'enabled');
+            } else {
+                themeIcon.textContent = '🌙';
+                themeLabel.textContent = 'Dark Mode';
+                localStorage.setItem('darkMode', 'disabled');
+            }
+        }
+
+        // Initialize theme based on localStorage
+        function initializeTheme() {
+            const themeIcon = document.getElementById('themeIcon');
+            const themeLabel = document.getElementById('themeLabel');
+            
+            if (localStorage.getItem('darkMode') === 'enabled') {
+                document.body.classList.add('light-mode');
+                themeIcon.textContent = '☀️';
+                themeLabel.textContent = 'Light Mode';
+            } else {
+                document.body.classList.remove('light-mode');
+                themeIcon.textContent = '🌙';
+                themeLabel.textContent = 'Dark Mode';
+            }
+        }
+
+        // ===== INITIALIZATION =====
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize theme
+            initializeTheme();
+            // Ensure sidebar is visible
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.remove('collapsed');
+        });
+    </script>
+</body>
+</html>
