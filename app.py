@@ -12,6 +12,8 @@ import tempfile
 logging.basicConfig(level=logging.INFO)
 
 # --- Flask App Setup ---
+from dotenv import load_dotenv
+load_dotenv()
 app = Flask(__name__)
 # Enable CORS for all routes
 CORS(app) 
