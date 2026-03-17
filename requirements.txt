@@ -1,5 +1,5 @@
 Flask
-google-genai
+groq
 python-dotenv
 waitress
 flask-cors

@@ -1,29 +1,26 @@
 import os
 import json
+import base64
 from flask import Flask, render_template, request, jsonify
 from flask_cors import CORS 
-from google import genai 
-from google.genai import types
+from groq import Groq
 from PIL import Image
 import logging
+import tempfile
 
 # Set up logging for the terminal output
 logging.basicConfig(level=logging.INFO)
 
 # --- Flask App Setup ---
-import tempfile
 app = Flask(__name__)
-# Enable CORS for all routes (necessary for frontend/backend communication)
+# Enable CORS for all routes
 CORS(app) 
 app.config['UPLOAD_FOLDER'] = tempfile.gettempdir()
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-# --- Generative AI Setup ---
-# CRITICAL: Replace "YOUR_API_KEY" with your actual Gemini API Key. 
-API_KEY = os.getenv("GEMINI_API_KEY", "AIzaSyA2xy0Y5STJtuYlG-xBbbVIediB1MafIvs") 
-
-# FIX: Initialize the Client object directly, removing the faulty 'configure' call.
-client = genai.Client(api_key=API_KEY) 
+# --- Groq AI Setup ---
+GROQ_API_KEY = os.getenv("GROQ_API_KEY") 
+client = Groq(api_key=GROQ_API_KEY) 
 
 SYSTEM_PROMPT = """
 You are a highly compassionate and professional AI health and wellness guide named 'AI Doctor'. 
@@ -33,18 +30,15 @@ You MUST include a prominent disclaimer in every single response stating:
 'I am an AI and cannot provide medical advice. Always consult a qualified healthcare professional for diagnosis and treatment.'
 """
 
-# Tool configuration to enable Google Search grounding
-search_tool = types.Tool(
-    google_search={}
-)
+def encode_image(image_path):
+    with open(image_path, "rb") as image_file:
+        return base64.b64encode(image_file.read()).decode('utf-8')
 
-# --- Routes for Chat and Image Analysis ---
+# --- Routes ---
 
 @app.route("/")
 def home():
-    # Log status to the console (where you run python app.py)
-    logging.info("Serving frontend: test.html. Backend is running and ready for API calls.")
-    # This renders the test.html file located in the 'templates' folder
+    logging.info("Serving frontend: test.html.")
     return render_template("test.html")
 
 @app.route("/about")
@@ -57,63 +51,46 @@ def terms():
 
 @app.route("/get-response", methods=["POST"])
 def get_response():
-    """Handles text chat and returns a grounded response."""
+    """Handles text chat using Groq."""
     try:
         data = request.get_json()
         user_message = data.get("message", "")
-        # The frontend provides the full history for context
-        chat_history_parts = data.get("history", []) 
+        history = data.get("history", []) 
         
         if not user_message.strip():
             return jsonify({"response": "Please say something."})
 
-        # Reconstruct content list for the API call (including history and new message)
-        contents = []
-        for item in chat_history_parts:
-            # Simple conversion of history to the format expected by generate_content
-            contents.append(types.Content(role=item['role'], parts=[types.Part.from_text(item['text'])]))
+        # Reconstruct messages for Groq
+        messages = [{"role": "system", "content": SYSTEM_PROMPT}]
         
-        # Add the current user message
-        contents.append(types.Content(role="user", parts=[types.Part.from_text(user_message)]))
+        for item in history:
+            role = "assistant" if item['role'] == "model" else "user"
+            messages.append({"role": role, "content": item['text']})
         
-        # Configuration for the model
-        config = types.GenerateContentConfig(
-            system_instruction=SYSTEM_PROMPT,
-            tools=[search_tool]
-        )
-
-        # Use the client object for the API call
-        response = client.models.generate_content(
-            model='gemini-2.5-flash',
-            contents=contents,
-            config=config
+        # Add current message
+        messages.append({"role": "user", "content": user_message})
+        
+        completion = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=messages,
+            temperature=0.7,
+            max_tokens=1024,
+            top_p=1,
+            stream=False
         )
         
-        # Process citations from grounding
-        sources = []
-        if response.candidates and response.candidates[0].grounding_metadata:
-            for attribution in response.candidates[0].grounding_metadata.grounding_chunks:
-                # The Python SDK provides source links directly in the chunks
-                if attribution.web and attribution.web.uri:
-                    sources.append({
-                        "uri": attribution.web.uri,
-                        "title": attribution.web.title or "Source Link"
-                    })
-
-        # Return the bot reply and the sources
         return jsonify({
-            "response": response.text,
-            "sources": sources
+            "response": completion.choices[0].message.content,
+            "sources": [] # Groq doesn't provide search grounding in the same way as Gemini yet
         })
 
     except Exception as e:
-        # Log the error to the terminal
         logging.error(f"Chat Error: {e}")
         return jsonify({"response": f"Internal API Error: {str(e)}", "sources": []})
 
 @app.route("/analyze-image", methods=["POST"])
 def analyze_image():
-    """Handles image file uploads and analysis."""
+    """Handles image uploads using Groq Vision."""
     if "image" not in request.files:
         return jsonify({"response": "No image provided."})
 
@@ -121,35 +98,44 @@ def analyze_image():
     file_path = os.path.join(app.config['UPLOAD_FOLDER'], image_file.filename)
     image_file.save(file_path)
     
-    bot_reply = ""
     try:
-        # Open the saved image using PIL
-        img = Image.open(file_path)
+        base64_image = encode_image(file_path)
         
-        prompt = "Analyze this medical image, scan, or report. Provide a helpful, non-diagnostic explanation and a strict disclaimer about consulting a doctor."
+        prompt = request.form.get("prompt", "Analyze this medical image, scan, or report. Provide a helpful, non-diagnostic explanation and a strict disclaimer about consulting a doctor.")
         
-        # Combine system prompt with image analysis
-        full_prompt = SYSTEM_PROMPT + "\n\n" + prompt
-
-        # Use the client object for the API call
-        response = client.models.generate_content(
-            model='gemini-2.5-flash', # Use the flash model for multimodal
-            contents=[full_prompt, img]
+        completion = client.chat.completions.create(
+            model="llama-3.2-11b-vision-preview",
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": f"{SYSTEM_PROMPT}\n\n{prompt}"},
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/jpeg;base64,{base64_image}",
+                            },
+                        },
+                    ],
+                }
+            ],
+            temperature=0.7,
+            max_tokens=1024,
+            top_p=1,
+            stream=False
         )
-        bot_reply = response.text
+        
+        bot_reply = completion.choices[0].message.content
         
     except Exception as e:
-        # Log the error to the terminal
         logging.error(f"Image Analysis Error: {e}")
         bot_reply = f"Error analyzing image: {str(e)}"
         
     finally:
-        # Clean up the saved file
         if os.path.exists(file_path):
             os.remove(file_path)
             
     return jsonify({"response": bot_reply})
-
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000) 
