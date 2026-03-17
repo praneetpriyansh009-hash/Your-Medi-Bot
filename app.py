@@ -1,119 +1,155 @@
 import os
-import logging
+import json
 from flask import Flask, render_template, request, jsonify
-import google.generativeai as genai
-from dotenv import load_dotenv
-from werkzeug.utils import secure_filename
-from pathlib import Path
+from flask_cors import CORS 
+from google import genai 
+from google.genai import types
+from PIL import Image
+import logging
 
+# Set up logging for the terminal output
+logging.basicConfig(level=logging.INFO)
 
-# --- App Initialization ---
+# --- Flask App Setup ---
+import tempfile
 app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = 'uploads'
+# Enable CORS for all routes (necessary for frontend/backend communication)
+CORS(app) 
+app.config['UPLOAD_FOLDER'] = tempfile.gettempdir()
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-# --- Basic Logging Configuration ---
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+# --- Generative AI Setup ---
+# CRITICAL: Replace "YOUR_API_KEY" with your actual Gemini API Key. 
+API_KEY = os.getenv("GEMINI_API_KEY", "AIzaSyA2xy0Y5STJtuYlG-xBbbVIediB1MafIvs") 
 
-# --- Securely Load Environment Variables ---
-load_dotenv()
-api_key = os.getenv("GOOGLE_API_KEY")
+# FIX: Initialize the Client object directly, removing the faulty 'configure' call.
+client = genai.Client(api_key=API_KEY) 
 
-if not api_key:
-    # Use logger instead of print for production
-    app.logger.critical("FATAL: GOOGLE_API_KEY not found. Please set it in your .env file.")
-    # In a real production scenario, you might want the app to exit or handle this more gracefully.
-    # For now, we'll raise an error to prevent it from starting without a key.
-    raise ValueError("GOOGLE_API_KEY not found. Please set it in your .env file.")
+SYSTEM_PROMPT = """
+You are a highly compassionate and professional AI health and wellness guide named 'AI Doctor'. 
+Your primary function is to provide helpful, informative guidance and general knowledge related to health, 
+symptoms, and wellness based on reliable, grounded information. 
+You MUST include a prominent disclaimer in every single response stating: 
+'I am an AI and cannot provide medical advice. Always consult a qualified healthcare professional for diagnosis and treatment.'
+"""
 
-# --- Configure and Initialize AI Model (ONCE) ---
-try:
-    genai.configure(api_key=api_key)
-    # Initialize the models once on startup for better performance
-    text_model = genai.GenerativeModel("models/gemini-1.5-flash")
-    vision_model = genai.GenerativeModel("models/gemini-1.5-flash-latest")
-    app.logger.info("Generative AI models initialized successfully.")
-except Exception as e:
-    app.logger.critical(f"Failed to configure or initialize Generative AI: {e}")
-    text_model = None
-    vision_model = None
+# Tool configuration to enable Google Search grounding
+search_tool = types.Tool(
+    google_search={}
+)
 
-# --- Route Definitions ---
+# --- Routes for Chat and Image Analysis ---
+
 @app.route("/")
 def home():
-    """Renders the main chat page."""
-    # The HTML file should be inside a 'templates' folder
+    # Log status to the console (where you run python app.py)
+    logging.info("Serving frontend: test.html. Backend is running and ready for API calls.")
+    # This renders the test.html file located in the 'templates' folder
     return render_template("test.html")
 
+@app.route("/about")
+def about():
+    return render_template("about.html")
+
+@app.route("/terms")
+def terms():
+    return render_template("terms.html")
 
 @app.route("/get-response", methods=["POST"])
 def get_response():
-    """Handles text-based chat messages."""
-    if not text_model:
-        return jsonify({"error": "Text model is not available."}), 500
-
-    user_message = request.json.get("message", "")
-
-    if not user_message.strip():
-        return jsonify({"response": "Please say something."})
-
+    """Handles text chat and returns a grounded response."""
     try:
-        response = text_model.generate_content(user_message)
-        # Using response.text is correct and concise
-        return jsonify({"response": response.text})
-    except Exception as e:
-        app.logger.error(f"Error during text generation: {e}")
-        return jsonify({"error": "Sorry, I encountered an error. Please try again."}), 500
+        data = request.get_json()
+        user_message = data.get("message", "")
+        # The frontend provides the full history for context
+        chat_history_parts = data.get("history", []) 
+        
+        if not user_message.strip():
+            return jsonify({"response": "Please say something."})
 
+        # Reconstruct content list for the API call (including history and new message)
+        contents = []
+        for item in chat_history_parts:
+            # Simple conversion of history to the format expected by generate_content
+            contents.append(types.Content(role=item['role'], parts=[types.Part.from_text(item['text'])]))
+        
+        # Add the current user message
+        contents.append(types.Content(role="user", parts=[types.Part.from_text(user_message)]))
+        
+        # Configuration for the model
+        config = types.GenerateContentConfig(
+            system_instruction=SYSTEM_PROMPT,
+            tools=[search_tool]
+        )
+
+        # Use the client object for the API call
+        response = client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=contents,
+            config=config
+        )
+        
+        # Process citations from grounding
+        sources = []
+        if response.candidates and response.candidates[0].grounding_metadata:
+            for attribution in response.candidates[0].grounding_metadata.grounding_chunks:
+                # The Python SDK provides source links directly in the chunks
+                if attribution.web and attribution.web.uri:
+                    sources.append({
+                        "uri": attribution.web.uri,
+                        "title": attribution.web.title or "Source Link"
+                    })
+
+        # Return the bot reply and the sources
+        return jsonify({
+            "response": response.text,
+            "sources": sources
+        })
+
+    except Exception as e:
+        # Log the error to the terminal
+        logging.error(f"Chat Error: {e}")
+        return jsonify({"response": f"Internal API Error: {str(e)}", "sources": []})
 
 @app.route("/analyze-image", methods=["POST"])
 def analyze_image():
-    """Handles image analysis requests."""
-    if not vision_model:
-        return jsonify({"error": "Vision model is not available."}), 500
-        
+    """Handles image file uploads and analysis."""
     if "image" not in request.files:
-        return jsonify({"error": "No image provided."}), 400
+        return jsonify({"response": "No image provided."})
 
     image_file = request.files["image"]
+    file_path = os.path.join(app.config['UPLOAD_FOLDER'], image_file.filename)
+    image_file.save(file_path)
     
-    if image_file.filename == '':
-        return jsonify({"error": "No selected file."}), 400
-
-    # Sanitize the filename for security
-    filename = secure_filename(image_file.filename)
-    upload_folder = app.config['UPLOAD_FOLDER']
-    os.makedirs(upload_folder, exist_ok=True) # Ensure the uploads directory exists
-    file_path = os.path.join(upload_folder, filename)
-    
+    bot_reply = ""
     try:
-        image_file.save(file_path)
-        app.logger.info(f"Image saved temporarily to {file_path}")
+        # Open the saved image using PIL
+        img = Image.open(file_path)
+        
+        prompt = "Analyze this medical image, scan, or report. Provide a helpful, non-diagnostic explanation and a strict disclaimer about consulting a doctor."
+        
+        # Combine system prompt with image analysis
+        full_prompt = SYSTEM_PROMPT + "\n\n" + prompt
 
-        # The google-generativeai library can accept a file path directly, which is simpler
-        # However, sending the bytes is also perfectly fine. Let's stick to your method.
-        image_parts = [{
-            "mime_type": image_file.mimetype,
-            "data": Path(file_path).read_bytes()
-        }]
-        
-        prompt = "Analyze this medical report or injury image and provide a helpful but non-diagnostic explanation. Disclaimer: you are an AI and not a medical professional."
-        
-        response = vision_model.generate_content([prompt, image_parts[0]])
-        
-        return jsonify({"response": response.text})
+        # Use the client object for the API call
+        response = client.models.generate_content(
+            model='gemini-2.5-flash', # Use the flash model for multimodal
+            contents=[full_prompt, img]
+        )
+        bot_reply = response.text
         
     except Exception as e:
-        app.logger.error(f"Error during image analysis: {e}")
-        return jsonify({"error": "Sorry, I couldn't analyze the image."}), 500
+        # Log the error to the terminal
+        logging.error(f"Image Analysis Error: {e}")
+        bot_reply = f"Error analyzing image: {str(e)}"
         
     finally:
-        # IMPORTANT: Clean up the uploaded file to save space and for security
+        # Clean up the saved file
         if os.path.exists(file_path):
             os.remove(file_path)
-            app.logger.info(f"Cleaned up temporary file: {file_path}")
+            
+    return jsonify({"response": bot_reply})
 
-# This block is for development only and should NOT be used in production.
-# A WSGI server like Gunicorn will be the entry point.
+
 if __name__ == "__main__":
-    app.run(debug=True, port=8000)
-    
+    app.run(debug=True, port=5000) 
