@@ -364,11 +364,43 @@
 
         .input-wrapper:focus-within {
             border-color: var(--accent);
-            background: rgba(0, 0, 0, 0.3);
+            background: rgba(255, 255, 255, 0.1);
             box-shadow: 0 8px 30px rgba(139, 92, 246, 0.2);
         }
         .light-theme .input-wrapper:focus-within {
             background: rgba(255, 255, 255, 0.8);
+        }
+
+        /* Scroll to Bottom Button */
+        .scroll-bottom-btn {
+            position: absolute;
+            bottom: 120px;
+            right: 40px;
+            width: 44px;
+            height: 44px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            z-index: 100;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+        }
+        .scroll-bottom-btn.visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        .scroll-bottom-btn:hover {
+            transform: scale(1.1);
+            background: #7c3aed;
         }
 
         .icon-btn {
@@ -753,6 +785,10 @@
             <div style="position: absolute; bottom: 120px; left: 40px;" id="typingIndicator" class="typing-indicator">
                 <div class="dot"></div><div class="dot"></div><div class="dot"></div>
             </div>
+            
+            <button id="scrollToBottomBtn" class="scroll-bottom-btn" onclick="scrollToBottom(true)" title="Scroll to bottom">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 13l5 5 5-5M7 6l5 5 5-5"/></svg>
+            </button>
         </div>
 
         <!-- MUSIC THERAPY Panel -->
@@ -859,6 +895,19 @@
                     </div>
                     <label class="toggle-switch">
                         <input type="checkbox" id="settingAutoScroll" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="settings-row">
+                    <div class="settings-row-left">
+                        <span class="settings-row-icon">💨</span>
+                        <div>
+                            <div class="settings-row-label">Smooth Scroll</div>
+                            <div class="settings-row-desc">Enable smooth transition when scrolling</div>
+                        </div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="settingSmoothScroll" checked>
                         <span class="toggle-slider"></span>
                     </label>
                 </div>
@@ -1077,12 +1126,30 @@
             handleInput(DOM.input);
         }
 
-        function scrollToBottom() {
-            const autoScroll = document.getElementById('settingAutoScroll');
-            if (!autoScroll || autoScroll.checked) {
-                DOM.container.scrollTop = DOM.container.scrollHeight;
+        function scrollToBottom(force = false) {
+            const autoScroll = document.getElementById('settingAutoScroll').checked;
+            const smoothScroll = document.getElementById('settingSmoothScroll').checked;
+            
+            if (force || autoScroll) {
+                DOM.container.scrollTo({
+                    top: DOM.container.scrollHeight,
+                    behavior: smoothScroll ? 'smooth' : 'auto'
+                });
             }
         }
+
+        // Show/hide scroll to bottom button
+        DOM.container.addEventListener('scroll', () => {
+            const btn = document.getElementById('scrollToBottomBtn');
+            const threshold = 150; // pixels from bottom
+            const isNearBottom = DOM.container.scrollHeight - DOM.container.scrollTop - DOM.container.clientHeight < threshold;
+            
+            if (isNearBottom) {
+                btn.classList.remove('visible');
+            } else if (DOM.container.scrollTop > 500) {
+                btn.classList.add('visible');
+            }
+        });
 
         function renderMarkdown(text) {
             return DOMPurify.sanitize(marked.parse(text));
